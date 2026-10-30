@@ -56,21 +56,19 @@ st.markdown("""
 # 2. CARREGAMENTO E FUNÇÕES DE CONSOLIDAÇÃO DE DADOS
 # =============================================================================
 PASTA_DATA = Path("data")
-
 @st.cache_data(show_spinner="Carregando bases estaduais de 2026...")
 def carregar_bases():
-    arqs_1t = [PASTA_DATA / "votos_t1_2026_presidente.csv", Path("votos_t1_2026_presidente.csv")]
-    arqs_2t = [PASTA_DATA / "votos_t2_2026_presidente.csv", Path("votos_t2_2026_presidente.csv")]
+    # Aponta para os novos ficheiros .parquet otimizados
+    p_1t = PASTA_DATA / "votos_t1_2026_presidente.parquet"
+    p_2t = PASTA_DATA / "votos_t2_2026_presidente.parquet"
     
-    p_1t = next((p for p in arqs_1t if p.exists()), None)
-    p_2t = next((p for p in arqs_2t if p.exists()), None)
-    
-    if not p_1t or not p_2t:
-        st.error("❌ Arquivos de dados não encontrados na pasta 'data/' ou na raiz.")
+    if not p_1t.exists() or not p_2t.exists():
+        st.error("❌ Ficheiros .parquet não encontrados na pasta 'data/'.")
         st.stop()
 
-    df_1t = pd.read_csv(p_1t, sep=";", encoding="latin1", low_memory=False)
-    df_2t = pd.read_csv(p_2t, sep=";", encoding="latin1", low_memory=False)
+    # Leitura ultrarrápida e otimizada via Parquet
+    df_1t = pd.read_parquet(p_1t)
+    df_2t = pd.read_parquet(p_2t)
 
     df_1t.columns = [str(c).strip().lower() for c in df_1t.columns]
     df_2t.columns = [str(c).strip().lower() for c in df_2t.columns]
